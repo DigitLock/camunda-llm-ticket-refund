@@ -17,9 +17,12 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Configuration
-CAMUNDA_URL = "http://localhost:8080/engine-rest"
-OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+# Configuration from environment
+CAMUNDA_URL = os.getenv("CAMUNDA_URL", "http://localhost:8080/engine-rest")
+CAMUNDA_USER = os.getenv("CAMUNDA_USER", "demo")
+CAMUNDA_PASSWORD = os.getenv("CAMUNDA_PASSWORD", "demo")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+WORKER_ID = os.getenv("WORKER_ID", "llm-fare-analyzer-1")
 
 if not OPENAI_API_KEY:
     logger.error("OPENAI_API_KEY environment variable not set!")
@@ -104,12 +107,16 @@ def main():
     logger.info(f"Connecting to Camunda: {CAMUNDA_URL}")
     
     worker = ExternalTaskWorker(
-        worker_id="llm-fare-analyzer-1",
+        worker_id=WORKER_ID,
         base_url=CAMUNDA_URL,
         config={
             "maxTasks": 1,
             "lockDuration": 30000,
             "asyncResponseTimeout": 10000,
+            "auth_basic": {
+                "username": CAMUNDA_USER,
+                "password": CAMUNDA_PASSWORD
+            }
         }
     )
     
