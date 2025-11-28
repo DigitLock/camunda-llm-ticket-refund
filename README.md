@@ -41,7 +41,7 @@ This project demonstrates a production-ready BPMN process for handling airline t
 
 **Solution**: Developed a separate React-based history viewer tool.
 
-**[→ Camunda History Viewer Repository](https://github.com/yourusername/camunda-history-viewer)**
+**[→ Camunda History Viewer Repository](https://github.com/DigitLock/camunda-history-viewer)**
 
 **Features**:
 - 📊 Visual timeline of completed process instances
@@ -83,13 +83,13 @@ The External Task Worker uses GPT-4o-mini to analyze:
 - Docker installed
 - Camunda Platform 7.x running
 - OpenAI API key ([get one here](https://platform.openai.com/api-keys))
-- *Optional*: [Camunda History Viewer](https://github.com/yourusername/camunda-history-viewer) for viewing completed processes
+- *Optional*: [Camunda History Viewer](https://github.com/DigitLock/camunda-history-viewer) for viewing completed processes
 
 ### Installation
 
 1. **Clone repository**:
 ```bash
-git clone https://github.com/yourusername/camunda-llm-ticket-refund.git
+git clone https://github.com/DigitLock/camunda-llm-ticket-refund.git
 cd camunda-llm-ticket-refund
 ```
 
