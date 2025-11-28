@@ -1,0 +1,350 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0na2z8z" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.41.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.24.0">
+  <bpmn:process id="ticket-refund" name="Ticket Refund Processing" isExecutable="true" camunda:historyTimeToLive="30">
+    <bpmn:startEvent id="StartEvent_RefundRequest" name="Refund request received">
+      <bpmn:outgoing>Flow_0f4aulq</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_0f4aulq" sourceRef="StartEvent_RefundRequest" targetRef="task_check_fare_rules" />
+    <bpmn:exclusiveGateway id="gateway_fare_check_result" name="Refund allowed?">
+      <bpmn:incoming>Flow_0o44lhf</bpmn:incoming>
+      <bpmn:outgoing>Flow_02e0lmd</bpmn:outgoing>
+      <bpmn:outgoing>Flow_1prxnj6</bpmn:outgoing>
+      <bpmn:outgoing>Flow_1qi7dbk</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_0o44lhf" sourceRef="task_check_fare_rules" targetRef="gateway_fare_check_result" />
+    <bpmn:sequenceFlow id="Flow_02e0lmd" name="Full refund" sourceRef="gateway_fare_check_result" targetRef="task_calculate_refund">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${fareRuleCheck == 'ALLOWED'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:serviceTask id="task_calculate_refund" name="Calculate refund amount" camunda:expression="${execution.setVariable(&#39;refundAmount&#39;, 15000)}">
+      <bpmn:incoming>Flow_02e0lmd</bpmn:incoming>
+      <bpmn:outgoing>Flow_0007pkj</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0007pkj" sourceRef="task_calculate_refund" targetRef="task_process_payment" />
+    <bpmn:sequenceFlow id="Flow_1prxnj6" name="With penalty" sourceRef="gateway_fare_check_result" targetRef="task_calculate_with_penalty">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${fareRuleCheck == 'WITH_PENALTY'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:serviceTask id="task_calculate_with_penalty" name="Calculate refund with penalty" camunda:expression="${execution.setVariable(&#39;refundAmount&#39;, 12000)}">
+      <bpmn:incoming>Flow_1prxnj6</bpmn:incoming>
+      <bpmn:outgoing>Flow_0fjvwn7</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_1qi7dbk" name="Requires manual review" sourceRef="gateway_fare_check_result" targetRef="task_manual_review">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${fareRuleCheck == 'MANUAL'}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:userTask id="task_manual_review" name="Manual review required" camunda:assignee="demo">
+      <bpmn:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="approved" label="Approve refund?" type="boolean">
+            <camunda:properties />
+            <camunda:validation />
+          </camunda:formField>
+        </camunda:formData>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1qi7dbk</bpmn:incoming>
+      <bpmn:outgoing>Flow_1kd6s6s</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="gateway_manual_decision" name="Approved?">
+      <bpmn:incoming>Flow_1kd6s6s</bpmn:incoming>
+      <bpmn:outgoing>Flow_0e02sgy</bpmn:outgoing>
+      <bpmn:outgoing>Flow_14uofqe</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_1kd6s6s" sourceRef="task_manual_review" targetRef="gateway_manual_decision" />
+    <bpmn:endEvent id="EndEvent_ManualApproved" name="Manually approved">
+      <bpmn:incoming>Flow_0e02sgy</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0e02sgy" name="Approved" sourceRef="gateway_manual_decision" targetRef="EndEvent_ManualApproved">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${approved == true}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:endEvent id="Event_1x92pnd" name="Refund rejected">
+      <bpmn:incoming>Flow_14uofqe</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_14uofqe" name="Rejected" sourceRef="gateway_manual_decision" targetRef="Event_1x92pnd">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${approved == false}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:endEvent id="EndEvent_RefundWithPenalty" name="Refund with penalty completed">
+      <bpmn:incoming>Flow_0fjvwn7</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0fjvwn7" sourceRef="task_calculate_with_penalty" targetRef="EndEvent_RefundWithPenalty" />
+    <bpmn:endEvent id="EndEvent_RefundSuccess" name="Refund completed">
+      <bpmn:incoming>Flow_1vuw31i</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1vuw31i" sourceRef="task_process_payment" targetRef="EndEvent_RefundSuccess" />
+    <bpmn:boundaryEvent id="BoundaryEvent_PaymentError" name="Payment API error" attachedToRef="task_process_payment">
+      <bpmn:outgoing>Flow_0wo907w</bpmn:outgoing>
+      <bpmn:errorEventDefinition id="ErrorEventDefinition_10shjf4" camunda:errorCodeVariable="PAYMENT_API_ERROR" camunda:errorMessageVariable="PAYMENT API ERROR" />
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="Flow_0wo907w" sourceRef="BoundaryEvent_PaymentError" targetRef="task_log_error" />
+    <bpmn:serviceTask id="task_log_error" name="Log error and increment counter" camunda:expression="${execution.setVariable(&#39;apiErrorCount&#39;, execution.getVariable(&#39;apiErrorCount&#39;) + 1)}">
+      <bpmn:incoming>Flow_0wo907w</bpmn:incoming>
+      <bpmn:outgoing>Flow_1o8hnln</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="gateway_retry_check" name="Retry attempts &#60;3 ?">
+      <bpmn:incoming>Flow_1o8hnln</bpmn:incoming>
+      <bpmn:outgoing>Flow_1e6vgww</bpmn:outgoing>
+      <bpmn:outgoing>Flow_018x50m</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_1o8hnln" sourceRef="task_log_error" targetRef="gateway_retry_check" />
+    <bpmn:sequenceFlow id="Flow_1e6vgww" name="Retry" sourceRef="gateway_retry_check" targetRef="task_process_payment">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${apiErrorCount &lt; 3}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_018x50m" name="Max retries reached" sourceRef="gateway_retry_check" targetRef="task_escalate_payment_error">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${apiErrorCount &gt;= 3}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:userTask id="task_escalate_payment_error" name="Escalate to operator" camunda:assignee="demo">
+      <bpmn:incoming>Flow_018x50m</bpmn:incoming>
+      <bpmn:outgoing>Flow_0zbgmy2</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="EndEvent_PaymentErrorEscalated" name="Escalated to support">
+      <bpmn:incoming>Flow_0zbgmy2</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0zbgmy2" sourceRef="task_escalate_payment_error" targetRef="EndEvent_PaymentErrorEscalated" />
+    <bpmn:sequenceFlow id="Flow_0q785v7" sourceRef="BoundaryEvent_SLA" targetRef="task_escalate_to_manager" />
+    <bpmn:userTask id="task_escalate_to_manager" name="Escalate to manager" camunda:assignee="manager">
+      <bpmn:incoming>Flow_0q785v7</bpmn:incoming>
+      <bpmn:outgoing>Flow_041rf07</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="EndEvent_SLA_Escalated" name="SLA breach handled">
+      <bpmn:incoming>Flow_041rf07</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_041rf07" sourceRef="task_escalate_to_manager" targetRef="EndEvent_SLA_Escalated" />
+    <bpmn:boundaryEvent id="BoundaryEvent_SLA" name="2 hour SLA" attachedToRef="task_manual_review">
+      <bpmn:outgoing>Flow_0q785v7</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerEventDefinition_032d3gu">
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT30S</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:boundaryEvent>
+    <bpmn:scriptTask id="task_process_payment" name="Process payment via gateway" scriptFormat="groovy">
+      <bpmn:incoming>Flow_0007pkj</bpmn:incoming>
+      <bpmn:incoming>Flow_1e6vgww</bpmn:incoming>
+      <bpmn:outgoing>Flow_1vuw31i</bpmn:outgoing>
+      <bpmn:script>def errorCount = execution.getVariable('apiErrorCount') ?: 0
+
+if (errorCount &lt; 2) {
+    throw new org.camunda.bpm.engine.delegate.BpmnError('PAYMENT_API_ERROR', 'Payment API unavailable')
+} else {
+    execution.setVariable('paymentStatus', 'SUCCESS')
+}</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:serviceTask id="task_check_fare_rules" name="Check fare rules" camunda:type="external" camunda:topic="analyze-fare-rules">
+      <bpmn:incoming>Flow_0f4aulq</bpmn:incoming>
+      <bpmn:outgoing>Flow_0o44lhf</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:textAnnotation id="TextAnnotation_0jdpj2m">
+      <bpmn:text>LLM can analyze fare rules and booking conditions</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_1r9wd7z" associationDirection="None" sourceRef="task_check_fare_rules" targetRef="TextAnnotation_0jdpj2m" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="ticket-refund">
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_RefundRequest">
+        <dc:Bounds x="182" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="162" y="225" width="76" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1jm7ski_di" bpmnElement="gateway_fare_check_result" isMarkerVisible="true">
+        <dc:Bounds x="425" y="175" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="409" y="151" width="82" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_030f5a1_di" bpmnElement="task_calculate_refund">
+        <dc:Bounds x="530" y="160" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0782ekw_di" bpmnElement="task_calculate_with_penalty">
+        <dc:Bounds x="530" y="270" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_10qqoqc_di" bpmnElement="task_manual_review">
+        <dc:Bounds x="530" y="380" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0ch62si_di" bpmnElement="EndEvent_RefundWithPenalty">
+        <dc:Bounds x="692" y="292" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="665" y="335" width="90" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0te6s9u_di" bpmnElement="EndEvent_RefundSuccess">
+        <dc:Bounds x="892" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="865" y="225" width="90" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_03ok6p4_di" bpmnElement="task_log_error">
+        <dc:Bounds x="860" y="270" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_13tr3wb_di" bpmnElement="gateway_retry_check" isMarkerVisible="true">
+        <dc:Bounds x="1015" y="285" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="996" y="342" width="88" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_06akd40_di" bpmnElement="task_escalate_payment_error">
+        <dc:Bounds x="1140" y="270" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_081px69_di" bpmnElement="EndEvent_PaymentErrorEscalated">
+        <dc:Bounds x="1322" y="292" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1310" y="335" width="61" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1abpapv_di" bpmnElement="EndEvent_ManualApproved">
+        <dc:Bounds x="902" y="402" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="897" y="445" width="46" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_03aaqem_di" bpmnElement="gateway_manual_decision" isMarkerVisible="true">
+        <dc:Bounds x="745" y="395" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="743" y="371" width="54" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1x92pnd_di" bpmnElement="Event_1x92pnd">
+        <dc:Bounds x="902" y="512" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="882" y="555" width="78" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1xugjmp_di" bpmnElement="task_escalate_to_manager">
+        <dc:Bounds x="630" y="540" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0soc5i1_di" bpmnElement="EndEvent_SLA_Escalated">
+        <dc:Bounds x="782" y="562" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="772" y="605" width="57" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1f21idh_di" bpmnElement="task_process_payment">
+        <dc:Bounds x="690" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1yu42gn_di" bpmnElement="task_check_fare_rules">
+        <dc:Bounds x="270" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Association_1r9wd7z_di" bpmnElement="Association_1r9wd7z">
+        <di:waypoint x="358" y="160" />
+        <di:waypoint x="370" y="148" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Event_0tn7c98_di" bpmnElement="BoundaryEvent_SLA">
+        <dc:Bounds x="612" y="402" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="662" y="402" width="56" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1355g9d_di" bpmnElement="BoundaryEvent_PaymentError">
+        <dc:Bounds x="772" y="182" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="831" y="190" width="64" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_0jdpj2m_di" bpmnElement="TextAnnotation_0jdpj2m">
+        <dc:Bounds x="370" y="80" width="100" height="84" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0f4aulq_di" bpmnElement="Flow_0f4aulq">
+        <di:waypoint x="218" y="200" />
+        <di:waypoint x="270" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0o44lhf_di" bpmnElement="Flow_0o44lhf">
+        <di:waypoint x="370" y="200" />
+        <di:waypoint x="425" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_02e0lmd_di" bpmnElement="Flow_02e0lmd">
+        <di:waypoint x="475" y="200" />
+        <di:waypoint x="530" y="200" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="477" y="182" width="52" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1prxnj6_di" bpmnElement="Flow_1prxnj6">
+        <di:waypoint x="450" y="225" />
+        <di:waypoint x="450" y="310" />
+        <di:waypoint x="530" y="310" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="435" y="265" width="61" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1qi7dbk_di" bpmnElement="Flow_1qi7dbk">
+        <di:waypoint x="450" y="225" />
+        <di:waypoint x="450" y="420" />
+        <di:waypoint x="530" y="420" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="423" y="320" width="84" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0007pkj_di" bpmnElement="Flow_0007pkj">
+        <di:waypoint x="630" y="200" />
+        <di:waypoint x="690" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1kd6s6s_di" bpmnElement="Flow_1kd6s6s">
+        <di:waypoint x="630" y="420" />
+        <di:waypoint x="745" y="420" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0e02sgy_di" bpmnElement="Flow_0e02sgy">
+        <di:waypoint x="795" y="420" />
+        <di:waypoint x="902" y="420" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="825" y="402" width="48" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_14uofqe_di" bpmnElement="Flow_14uofqe">
+        <di:waypoint x="770" y="445" />
+        <di:waypoint x="770" y="530" />
+        <di:waypoint x="902" y="530" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="764" y="485" width="44" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0fjvwn7_di" bpmnElement="Flow_0fjvwn7">
+        <di:waypoint x="630" y="310" />
+        <di:waypoint x="692" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1vuw31i_di" bpmnElement="Flow_1vuw31i">
+        <di:waypoint x="790" y="200" />
+        <di:waypoint x="892" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0wo907w_di" bpmnElement="Flow_0wo907w">
+        <di:waypoint x="800" y="215" />
+        <di:waypoint x="800" y="310" />
+        <di:waypoint x="860" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1o8hnln_di" bpmnElement="Flow_1o8hnln">
+        <di:waypoint x="960" y="310" />
+        <di:waypoint x="1015" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1e6vgww_di" bpmnElement="Flow_1e6vgww">
+        <di:waypoint x="1040" y="285" />
+        <di:waypoint x="1040" y="130" />
+        <di:waypoint x="740" y="130" />
+        <di:waypoint x="740" y="160" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="877" y="112" width="27" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_018x50m_di" bpmnElement="Flow_018x50m">
+        <di:waypoint x="1065" y="310" />
+        <di:waypoint x="1140" y="310" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1075" y="292" width="55" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0zbgmy2_di" bpmnElement="Flow_0zbgmy2">
+        <di:waypoint x="1240" y="310" />
+        <di:waypoint x="1322" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0q785v7_di" bpmnElement="Flow_0q785v7">
+        <di:waypoint x="648" y="420" />
+        <di:waypoint x="680" y="420" />
+        <di:waypoint x="680" y="540" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_041rf07_di" bpmnElement="Flow_041rf07">
+        <di:waypoint x="730" y="580" />
+        <di:waypoint x="782" y="580" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
