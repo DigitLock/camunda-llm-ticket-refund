@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camunda LLM Demo - DigitLock Portfolio</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(35deg, #3c5ff8 0%, #67c9e7 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 20px 15px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 35px 45px;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 32px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 17px;
+            margin-bottom: 6px;
+        }
+
+        .author {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .description {
+            color: #444;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            font-size: 15px;
+        }
+
+        .features {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 18px 22px;
+            margin-bottom: 25px;
+        }
+
+        .features h4 {
+            color: #333;
+            margin-bottom: 12px;
+            font-size: 20px;
+        }
+
+        .features ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .features li {
+            color: #555;
+            padding: 5px 0;
+            padding-left: 26px;
+            position: relative;
+            font-size: 15px;
+        }
+
+        .features li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #3c5ff8;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .links {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .link-card {
+            background: linear-gradient(35deg, #3c5ff8 20%, #67c9e7 100%);
+            color: white;
+            padding: 20px 15px;
+            border-radius: 12px;
+            text-decoration: none;
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .link-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(60, 95, 248, 0.3);
+        }
+
+        .link-card-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .link-card-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .link-card-desc {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .credentials {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            padding: 12px 18px;
+            margin-bottom: 20px;
+        }
+
+        .credentials h4 {
+            color: #856404;
+            margin-bottom: 6px;
+            font-size: 15px;
+        }
+
+        .credentials p {
+            color: #856404;
+            font-size: 13px;
+        }
+
+        .footer {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            font-size: 13px;
+        }
+
+        .footer-section {
+            margin-bottom: 10px;
+        }
+
+        .footer-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .footer-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .footer-content {
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .footer a {
+            color: #3c5ff8;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        .tech-badge {
+            display: inline-block;
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin: 2px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 25px;
+            }
+
+            h1 {
+                font-size: 26px;
+            }
+
+            .links {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 95%;
+            max-height: 95vh;
+            overflow: auto;
+            position: relative;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 32px;
+            font-weight: bold;
+            color: #999;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .modal-close:hover {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+            <img src="/static/camunda-icon.png" style="height: 38px;">
+            <span>Camunda with</span>
+            <img src="/static/openai-icon.webp" style="height: 34px;">
+            <span>LLM Integration</span>
+        </h1>
+        <p class="subtitle" style="text-align: center;">Simplified Ticket Refund Business Process Demo</p>
+        <p class="author" style="text-align: center;">Portfolio Project by Igor Kudinov</p>
+
+        <div class="description">
+            <p>
+                Production-ready BPMN 2.0 workflow for automated airline ticket refund processing. 
+                Built with <strong>Camunda Platform 7</strong> and powered by <strong>OpenAI GPT-4o-mini</strong>, showcasing intelligent 
+                fare rule analysis through the External Task pattern.
+            </p>
+        </div>
+
+        <div class="features">
+            <h4>📋 Key Features</h4>
+            <ul>
+                <li>Automated ticket refund workflow with BPMN 2.0</li>
+                <li>LLM-powered fare rule analysis using External Task pattern</li>
+                <li>Retry logic with error handling and boundary events</li>
+                <li>PostgreSQL database for process persistence</li>
+                <li>Custom Go-based history viewer for process monitoring</li>
+            </ul>
+        </div>
+
+        <div class="links" style="grid-template-columns: 1fr 1fr 1fr;">  <!-- Изменено на 3 колонки -->
+            <a href="https://camunda.camunda-llm-demo.digitlock.systems" class="link-card">
+                <div class="link-card-icon">⚙️</div>
+                <div class="link-card-title">Camunda Cockpit</div>
+                <div class="link-card-desc">Monitor and manage process instances</div>
+            </a>
+
+            <a href="https://history.camunda-llm-demo.digitlock.systems" class="link-card">
+                <div class="link-card-icon">📊</div>
+                <div class="link-card-title">Process History</div>
+                <div class="link-card-desc">View execution timeline and analytics</div>
+            </a>
+
+            <a href="#" id="view-diagram-btn" class="link-card">
+                <div class="link-card-icon">🔄</div>
+                <div class="link-card-title">View BPMN Diagram</div>
+                <div class="link-card-desc">Interactive process flow visualization</div>
+            </a>
+        </div>
+
+        <div class="credentials">
+            <h4>🔐 Access Credentials</h4>
+            <p>To access Camunda Cockpit, please contact the project owner for credentials.</p>
+        </div>
+
+        <div class="footer">
+            <div class="footer-section">
+                <div class="footer-title">📦 Repository Structure</div>
+                <div class="footer-content">
+                    <a href="https://github.com/DigitLock/camunda-llm-ticket-refund" target="_blank">Main Project</a> - BPMN workflows, LLM worker, deployment configs<br>
+                    <a href="https://github.com/DigitLock/camunda-history-viewer" target="_blank">History Viewer</a> - Go-based process monitoring dashboard
+                </div>
+            </div>
+
+            <div class="footer-section">
+                <div class="footer-title">🛠️ Tech Stack</div>
+                <div class="footer-content">
+                    <span class="tech-badge">Camunda 7.21</span>
+                    <span class="tech-badge">OpenAI GPT-4o-mini</span>
+                    <span class="tech-badge">Go 1.21</span>
+                    <span class="tech-badge">Python 3.11</span>
+                    <span class="tech-badge">PostgreSQL</span>
+                    <span class="tech-badge">Docker</span>
+                    <span class="tech-badge">Nginx</span>
+                </div>
+            </div>
+
+            <div class="footer-section" style="text-align: center; color: #999; margin-top: 12px;">
+                Built by DigitLock
+            </div>
+        </div>
+    </div>
+
+<div id="bpmn-modal" class="modal">
+    <div class="modal-content">
+        <span class="modal-close">&times;</span>
+        <h2 style="margin-bottom: 15px; color: #333;">BPMN Process Diagram</h2>
+        <img src="/static/diagram.png" style="width: 100%; height: auto; border-radius: 8px;">
+    </div>
+</div>
+
+<script>
+const modal = document.getElementById('bpmn-modal');
+const modalTrigger = document.getElementById('view-diagram-btn');
+const modalClose = document.querySelector('.modal-close');
+
+modalTrigger.onclick = function(e) {
+    e.preventDefault();
+    modal.style.display = 'flex';
+}
+
+modalClose.onclick = function() {
+    modal.style.display = 'none';
+}
+
+window.onclick = function(event) {
+    if (event.target == modal) {
+        modal.style.display = 'none';
+    }
+}
+
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        modal.style.display = 'none';
+    }
+});
+</script>
+</body>
+</html>
