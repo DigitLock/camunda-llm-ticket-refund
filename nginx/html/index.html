@@ -101,7 +101,7 @@
             background: linear-gradient(35deg, #3c5ff8 20%, #67c9e7 100%);
             color: white;
             padding: 20px 15px;
-            border-radius: 12px;
+            border-radius: 20px;
             text-decoration: none;
             transition: transform 0.3s, box-shadow 0.3s;
             display: flex;
@@ -247,7 +247,82 @@
         .modal-close:hover {
             color: #333;
         }
+
+        .features h4 i,
+        .credentials h4 i,
+        .footer-title i {
+            margin-right: 8px;
+            color: #3c5ff8;
+        }
+
+        .features li i {
+            position: absolute;
+            left: 0;
+            color: #3c5ff8;
+            font-size: 16px;
+        }
+
+        .link-card-icon i {
+            font-size: 48px;
+        }
+
+        .docs-links {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        }
+
+        .doc-link-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .doc-link-item:hover {
+            background: #e3f2fd;
+            border-color: #1976d2;
+            transform: translateX(5px);
+        }
+
+        .doc-icon {
+            font-size: 28px;
+            color: #3c5ff8;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .doc-content {
+            flex: 1;
+        }
+
+        .doc-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .doc-desc {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .doc-arrow {
+            font-size: 16px;
+            color: #999;
+        }
+
+        .doc-link-item:hover .doc-arrow {
+            color: #1976d2;
+        }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
     <div class="container">
@@ -269,44 +344,51 @@
         </div>
 
         <div class="features">
-            <h4>📋 Key Features</h4>
+            <h4><i class="fas fa-clipboard-list"></i> Key Features</h4>
             <ul>
-                <li>Automated ticket refund workflow with BPMN 2.0</li>
-                <li>LLM-powered fare rule analysis using External Task pattern</li>
-                <li>Retry logic with error handling and boundary events</li>
-                <li>PostgreSQL database for process persistence</li>
-                <li>Custom Go-based history viewer for process monitoring</li>
+                <li><i class="fas fa-check-circle"></i> Automated ticket refund workflow with BPMN 2.0</li>
+                <li><i class="fas fa-check-circle"></i> LLM-powered fare rule analysis using External Task pattern</li>
+                <li><i class="fas fa-check-circle"></i> Retry logic with error handling and boundary events</li>
+                <li><i class="fas fa-check-circle"></i> PostgreSQL database for process persistence</li>
+                <li><i class="fas fa-check-circle"></i> Custom Go-based history viewer for process monitoring</li>
             </ul>
         </div>
 
-        <div class="links" style="grid-template-columns: 1fr 1fr 1fr;">  <!-- Изменено на 3 колонки -->
+        <div class="links" style="grid-template-columns: 1fr 1fr;">
+            <a href="#" id="view-diagram-btn" class="link-card">
+                <div class="link-card-icon"><i class="fas fa-project-diagram"></i></div>
+                <div class="link-card-title">View BPMN Diagram</div>
+                <div class="link-card-desc">Interactive process flow visualization</div>
+            </a>
+
+            <a href="#" id="view-docs-btn" class="link-card">
+                <div class="link-card-icon"><i class="fas fa-book-open"></i></div>
+                <div class="link-card-title">Documentation</div>
+                <div class="link-card-desc">Architecture, tests & technical details</div>
+            </a>
+
             <a href="https://camunda.camunda-llm-demo.digitlock.systems" class="link-card">
-                <div class="link-card-icon">⚙️</div>
+                <div class="link-card-icon"><i class="fas fa-cogs"></i></div>
                 <div class="link-card-title">Camunda Cockpit</div>
                 <div class="link-card-desc">Monitor and manage process instances</div>
             </a>
 
             <a href="https://history.camunda-llm-demo.digitlock.systems" class="link-card">
-                <div class="link-card-icon">📊</div>
+                <div class="link-card-icon"><i class="fas fa-chart-bar"></i></div>
                 <div class="link-card-title">Process History</div>
                 <div class="link-card-desc">View execution timeline and analytics</div>
             </a>
 
-            <a href="#" id="view-diagram-btn" class="link-card">
-                <div class="link-card-icon">🔄</div>
-                <div class="link-card-title">View BPMN Diagram</div>
-                <div class="link-card-desc">Interactive process flow visualization</div>
-            </a>
         </div>
 
         <div class="credentials">
-            <h4>🔐 Access Credentials</h4>
+            <h4><i class="fas fa-lock"></i> Access Credentials</h4>
             <p>To access Camunda Cockpit, please contact the project owner for credentials.</p>
         </div>
 
         <div class="footer">
             <div class="footer-section">
-                <div class="footer-title">📦 Repository Structure</div>
+                <div class="footer-title"><i class="fas fa-box"></i> Repository Structure</div>
                 <div class="footer-content">
                     <a href="https://github.com/DigitLock/camunda-llm-ticket-refund" target="_blank">Main Project</a> - BPMN workflows, LLM worker, deployment configs<br>
                     <a href="https://github.com/DigitLock/camunda-history-viewer" target="_blank">History Viewer</a> - Go-based process monitoring dashboard
@@ -314,7 +396,7 @@
             </div>
 
             <div class="footer-section">
-                <div class="footer-title">🛠️ Tech Stack</div>
+                <div class="footer-title"><i class="fas fa-tools"></i> Tech Stack</div>
                 <div class="footer-content">
                     <span class="tech-badge">Camunda 7.21</span>
                     <span class="tech-badge">OpenAI GPT-4o-mini</span>
@@ -340,10 +422,50 @@
     </div>
 </div>
 
+<div id="docs-modal" class="modal">
+    <div class="modal-content" style="max-width: 600px;">
+        <span class="modal-close" id="docs-modal-close">&times;</span>
+        <h2 style="margin-bottom: 10px; color: #333;"><i class="fas fa-book-open"></i> Documentation</h2>
+        <p style="color: #666; margin-bottom: 25px; font-size: 14px;">Comprehensive technical documentation hosted on Confluence</p>
+
+        <div class="docs-links">
+            <a href="https://igor-kudinov.atlassian.net/wiki/external/MmUzMDBiNmExNzI0NGFjMDlhNjI4NGQyM2E3OTZjZTI" target="_blank" class="doc-link-item">
+                <div class="doc-icon"><i class="fas fa-file-alt"></i></div>
+                <div class="doc-content">
+                    <div class="doc-title">Project Overview</div>
+                    <div class="doc-desc">Introduction, features, and business context</div>
+                </div>
+                <div class="doc-arrow"><i class="fas fa-external-link-alt"></i></div>
+            </a>
+
+            <a href="https://igor-kudinov.atlassian.net/wiki/external/OTE1MDczOWZmYmJlNGJmMTlmODNkZTc1ODE4YTMyZTU" target="_blank" class="doc-link-item">
+                <div class="doc-icon"><i class="fas fa-sitemap"></i></div>
+                <div class="doc-content">
+                    <div class="doc-title">Architecture Documentation</div>
+                    <div class="doc-desc">System design, components, and data flow</div>
+                </div>
+                <div class="doc-arrow"><i class="fas fa-external-link-alt"></i></div>
+            </a>
+
+            <a href="https://igor-kudinov.atlassian.net/wiki/external/NGYxYjYxY2Q4MWVkNDQ5ODljMWQ1NjE0MGM1NDBhZjE" target="_blank" class="doc-link-item">
+                <div class="doc-icon"><i class="fas fa-check-circle"></i></div>
+                <div class="doc-content">
+                    <div class="doc-title">Test Results & Scenarios</div>
+                    <div class="doc-desc">Detailed test documentation and coverage</div>
+                </div>
+                <div class="doc-arrow"><i class="fas fa-external-link-alt"></i></div>
+            </a>
+        </div>
+    </div>
+</div>
+
 <script>
 const modal = document.getElementById('bpmn-modal');
 const modalTrigger = document.getElementById('view-diagram-btn');
 const modalClose = document.querySelector('.modal-close');
+const docsModal = document.getElementById('docs-modal');
+const docsTrigger = document.getElementById('view-docs-btn');
+const docsClose = document.getElementById('docs-modal-close');
 
 modalTrigger.onclick = function(e) {
     e.preventDefault();
@@ -363,6 +485,31 @@ window.onclick = function(event) {
 document.addEventListener('keydown', function(event) {
     if (event.key === 'Escape') {
         modal.style.display = 'none';
+    }
+});
+
+docsTrigger.onclick = function(e) {
+    e.preventDefault();
+    docsModal.style.display = 'flex';
+}
+
+docsClose.onclick = function() {
+    docsModal.style.display = 'none';
+}
+
+window.onclick = function(event) {
+    if (event.target == modal) {
+        modal.style.display = 'none';
+    }
+    if (event.target == docsModal) {
+        docsModal.style.display = 'none';
+    }
+}
+
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        modal.style.display = 'none';
+        docsModal.style.display = 'none';
     }
 });
 </script>
